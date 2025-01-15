@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ROI Image Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 50px;
+      }
+      .form-column {
+        width: 300px;
+      }
+      .preview-column {
+        flex-grow: 1;
+      }
+      #previewContainer {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+      }
+      #previewImg {
+        max-width: 300px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Client-side ROI Image Generator</h1>
+
+    <div class="container">
+      <!-- LEFT COLUMN: FORM INPUTS -->
+      <div class="form-column">
+        <label for="productName">Product Name:</label><br />
+        <input type="text" id="productName" placeholder="e.g. NZDUSD" /><br /><br />
+
+        <label for="profit">Profit (Number):</label><br />
+        <input type="number" id="profit" step="0.01" placeholder="e.g. 1234.56" /><br /><br />
+
+        <!-- Buttons for preview and download -->
+        <button id="previewBtn">Preview</button>
+        <button id="downloadBtn">Download</button>
+      </div>
+
+      <!-- RIGHT COLUMN: IMAGE PREVIEW -->
+      <div class="preview-column">
+        <h3>Preview</h3>
+        <div id="previewContainer">
+          <img id="previewImg" src="" alt="Preview will appear here" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden canvas where we draw the 9:16 image -->
+    <canvas id="roiCanvas" width="1080" height="1920" style="display: none;"></canvas>
+
+    <script>
+      const productNameInput = document.getElementById('productName');
+      const profitInput = document.getElementById('profit');
+      const previewBtn = document.getElementById('previewBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+
+      const canvas = document.getElementById('roiCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const previewImg = document.getElementById('previewImg');
+
+      // Draw the image on the canvas
+      function drawCanvas() {
+        // 1) Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 2) Fill background (solid black for now; replace with an image if you want)
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 3) Text styling
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+
+        // Product name at the top
+        ctx.font = 'bold 60px sans-serif';
+        ctx.fillText(`Trading ${productNameInput.value || 'Unknown'}`, canvas.width / 2, 200);
+
+        // Big profit in the middle
+        ctx.font = 'bold 150px sans-serif';
+        const profit = parseFloat(profitInput.value) || 0;
+        const formattedProfit = profit.toLocaleString();
+        ctx.fillText(`$${formattedProfit}`, canvas.width / 2, canvas.height / 2);
+
+        // Sub-text
+        ctx.font = 'bold 60px sans-serif';
+        ctx.fillText('Profit', canvas.width / 2, canvas.height / 2 + 100);
+
+        // Branding text near the bottom
+        ctx.font = '30px sans-serif';
+        ctx.fillText('Yuk, ikutan trading di MIFX!', canvas.width / 2, canvas.height - 100);
+      }
+
+      // Preview button: draw the canvas, then convert to data URL for the <img>
+      previewBtn.addEventListener('click', () => {
+        drawCanvas();
+        const dataURL = canvas.toDataURL('image/png');
+        previewImg.src = dataURL;
+      });
+
+      // Download button: draw again (to ensure up-to-date), then download the canvas as PNG
+      downloadBtn.addEventListener('click', () => {
+        drawCanvas();
+        const dataURL = canvas.toDataURL('image/png');
+
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.download = 'roi.png';
+        link.href = dataURL;
+        link.click();
+      });
+    </script>
+  </body>
+</html>
