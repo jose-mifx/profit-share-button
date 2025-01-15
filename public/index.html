@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ROI Image Exporter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 50px;
+      }
+      .form-column {
+        width: 300px;
+      }
+      .preview-column {
+        flex-grow: 1;
+      }
+      #previewContainer {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+      }
+      #previewImg {
+        max-width: 300px; /* You can adjust the preview size */
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Generate ROI Image</h1>
+    <div class="container">
+      <!-- LEFT COLUMN: FORM -->
+      <div class="form-column">
+        <form id="roiForm" action="/generate" method="get" target="_blank">
+          <label for="productName">Product Name:</label><br />
+          <input type="text" id="productName" name="productName" /><br /><br />
+
+          <label for="profit">Profit (Number):</label><br />
+          <input type="number" id="profit" name="profit" step="0.01" /><br /><br />
+
+          <!-- Button to fetch preview WITHOUT leaving the page -->
+          <button type="button" id="previewBtn">Preview</button>
+
+          <!-- Button to generate the final image in a new tab -->
+          <button type="submit" style="margin-left: 10px;">Generate</button>
+        </form>
+      </div>
+
+      <!-- RIGHT COLUMN: PREVIEW IMAGE -->
+      <div class="preview-column">
+        <h3>Live Preview</h3>
+        <div id="previewContainer">
+          <img id="previewImg" src="" alt="Preview will appear here" />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Function to load the preview image
+      function loadPreview() {
+        const productName = document.getElementById('productName').value;
+        const profit = document.getElementById('profit').value;
+
+        // Build the URL to your /generate endpoint
+        const url = `/generate?productName=${encodeURIComponent(productName)}&profit=${encodeURIComponent(profit)}`;
+
+        // Fetch the generated image as a Blob
+        fetch(url)
+          .then((response) => response.blob())
+          .then((blob) => {
+            // Create a local URL for the Blob and set it as the <img> src
+            const imgUrl = URL.createObjectURL(blob);
+            const previewImg = document.getElementById('previewImg');
+            previewImg.src = imgUrl;
+          })
+          .catch((err) => {
+            console.error('Error fetching preview:', err);
+          });
+      }
+
+      // Attach our preview function to the "Preview" button
+      document.getElementById('previewBtn').addEventListener('click', loadPreview);
+    </script>
+  </body>
+</html>
